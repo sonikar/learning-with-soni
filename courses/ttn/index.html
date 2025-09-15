@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TTN • Course Hub</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;margin:0;background:#0f172a;color:#e5e7eb}
+  main{max-width:900px;margin:0 auto;padding:24px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  a{display:block;background:#111827;border:1px solid #1f2937;border-radius:12px;padding:14px;color:#e5e7eb;text-decoration:none}
+  a:hover{outline:2px solid #334155}
+  .muted{color:#9aa4b2}
+</style></head>
+<body>
+<main>
+  <h1>Time Travel Narratives</h1>
+  <p class="muted">Live activities</p>
+  <div id="list" class="grid"></div>
+</main>
+<script>
+// show only published activities from activities.json
+fetch('activities.json').then(r=>r.json()).then(items=>{
+  const list=document.getElementById('list');
+  items.filter(x=>x.published).forEach(x=>{
+    const a=document.createElement('a');
+    a.href = x.href; a.innerHTML = `<h3>${x.title}</h3><p class="muted">${x.desc||''}</p>`;
+    list.appendChild(a);
+  });
+});
+</script>
+</body></html>
