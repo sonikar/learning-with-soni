@@ -315,11 +315,21 @@ function render(){
   meta.textContent = STORY_META;
   chunkBody.innerHTML = c.body;
 
-  let picksAll = getPicks();
-  const sid = getStudentId();
-  if((!picksAll || !picksAll[idx]) && sid){
+ let picksAll = getPicks() || {};
+const sid = getStudentId();
+if (!picksAll[idx]) {
+  if (sid) {
+    // seeded per-student
     reseedPicksFor(sid);
-    picksAll = getPicks();
+    picksAll = getPicks() || {};
+  } else {
+    // no seed yet → create & persist a fallback set so export can't be blank
+    const fallback = seededSample(c.questions, c.pickCount ?? 3, mulberry32(123456 + idx));
+    picksAll[idx] = fallback;
+    setPicks(picksAll);
+  }
+}
+const picks = picksAll[idx];
   }
   const picks = (picksAll && picksAll[idx]) ? picksAll[idx] : (()=>{
     const rng = mulberry32(123456); return seededSample(c.questions, c.pickCount ?? 3, rng);
