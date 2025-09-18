@@ -69,6 +69,7 @@
     <button id="exportCSV">Export CSV</button>
     <button id="exportJSON">Export JSON</button>
     <button id="clearAll">Clear Saved Data</button>
+    <button id="submitBtn">Submit to Teacher</button>
   </div>
 
   <p class="muted" style="margin-top:12px">
@@ -382,3 +383,41 @@ render();
 </script>
 </body>
 </html>
+<script>
+const SUBMIT_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE"; // <-- from step 1
+
+async function submitToSheet({course, activity, studentId, answers, picks, meta={}}){
+  const payload = {
+    course,
+    activity,
+    student_id: studentId,
+    payload: { answers, picks, meta }
+  };
+  try {
+    await fetch(SUBMIT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    alert("Submitted! (Keep your CSV/JSON export as backup.)");
+  } catch (e) {
+    alert("Could not submit right now. Please Export CSV as backup.");
+  }
+}
+
+// wire the button
+document.getElementById("submitBtn").addEventListener("click", ()=>{
+  const sid = localStorage.getItem("ttn-delhi-retell-student") || prompt("Student ID?");
+  const answers = JSON.parse(localStorage.getItem("ttn-delhi-retell-answers") || "{}");
+  const picks   = JSON.parse(localStorage.getItem("ttn-delhi-retell-picks") || "{}");
+  submitToSheet({
+    course: "TTN",
+    activity: "Delhi — Retelling",
+    studentId: sid || "",
+    answers,
+    picks,
+    meta: { userAgent: navigator.userAgent }
+  });
+});
+</script>
