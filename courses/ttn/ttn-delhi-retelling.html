@@ -370,12 +370,25 @@ document.getElementById("exportJSON").addEventListener("click", ()=>{
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ttn-delhi-retelling-responses.json"; a.click();
 });
 document.getElementById("exportCSV").addEventListener("click", ()=>{
-  const saved = getSaved(); const picks = getPicks(); const sid = getStudentId() || "";
-  let rows = [["student_id","chunk","q_index","question","answer"]];
-  chunks.forEach((c,i)=> (picks[i]||[]).forEach((q,qi)=>{
+  const saved = getSaved(); 
+let picks = getPicks() || {}; 
+const sid = getStudentId() || "";
+let rows = [["student_id","chunk","q_index","question","answer"]];
+
+chunks.forEach((c,i)=>{
+  // if this chunk somehow has no saved picks, generate a deterministic fallback
+  if (!picks[i] || !picks[i].length) {
+    const rng = mulberry32(999001 + i);
+    picks[i] = seededSample(c.questions, c.pickCount ?? 3, rng);
+  }
+  picks[i].forEach((q,qi)=>{
     const ans = (saved[i] && saved[i][qi]) ? saved[i][qi].replace(/\n/g," ") : "";
     rows.push([sid, i+1, qi+1, q, ans]);
-  }));
+  });
+});
+
+// persist any regenerated picks so future exports match
+setPicks(picks);
   const csv = rows.map(r=>r.map(v=>`"${(v||"").replace(/"/g,'""')}"`).join(",")).join("\n");
   const blob = new Blob([csv], {type:"text/csv"}); const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = "ttn-delhi-retelling-responses.csv"; a.click();
